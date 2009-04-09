@@ -1,0 +1,49 @@
+#############
+### ABOUT ###
+#############
+The name munojabo stands for "munin jabber notification bot". Munojabo is a
+script that is designed to be called by munin when the values monitored by munin
+leave the "warning" or "critical" range.
+
+####################
+### INSTALLATION ###
+####################
+The script requires xmpp.py, under Debian/Ubuntu, this script is available as
+the python-xmpp package. To test if the right library is installed, simply
+execute the script with no parameters, it will throw an import-error upon
+startup.
+
+To install the script, simply copy it to any place you like. It is usually good
+to copy it into a directory that is in the PATH environment variable, the best
+place usually is /usr/local/bin.
+
+#####################
+### CONFIGURATION ###
+#####################
+This script requires a config-file located at /etc/munojabo.conf. An example
+configuration file can be found in this directory. Just fill in the appropriate
+details.
+
+To configure munin to use this script, add a contact line like this to your
+munin.conf:
+
+contact.you.command <munojabo.py> <your_jid> ${var:host} "${var:graph_title}" \
+	"--warnings=${loop<;>:wfields \
+		${var:label}=${var:value},${var:wrange},${var:crange}}" \
+	"--critical=${loop<;>:cfields \
+		${var:label}=${var:value},${var:wrange},${var:crange}}" \
+	"--unknown=${loop<;>:ufields \
+		${var:label}=${var:value},${var:wrange},${var:crange}}"
+
+Replace <munojabo.py> with the path to the script (or just "munojabo.py" if it
+is in your PATH). Also replace <your_jid> with the jid that should receive the
+notifications. You can optionally include a resource, without a given resource,
+the resource with the highest resource will receive the message.
+
+All in all, a call to the script might look something like this:
+	munojabo.py mati@fsinf.at pluto.htu.tuwien.ac.at Temperature --warnings= --critical=foo=5,,7: --unknown=
+
+Note that the contact-line given above is not enough munin-configuration, since
+munin has to be configured to send warnings at all. This is outside the scope of
+this file, so please visit this page:
+	http://munin.projects.linpro.no/wiki/HowToContact
