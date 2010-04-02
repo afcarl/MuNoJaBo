@@ -82,12 +82,9 @@ parser.add_option( '--unknown', dest='unknown', type='string',
 	help='Fields with a "unknown" value.' )
 parser.add_option( '--clean', dest='clean', action='store_true', default=False,
 	help='Clean notifications older than 21600 secondes.' )
+parser.add_option( '--force-send', action='store_true', default=False,
+	help='Send message no matter what.' )
 (options, args) = parser.parse_args()
-
-# see if all required options (jid, host, graph) were given:
-if (not options.jid or not options.host or not options.graph) and not options.clean:
-	parser.print_help()
-	sys.exit(1)
 
 # connect to mysql database:
 mysql_conn = MySQLdb.connect(
@@ -98,6 +95,7 @@ mysql_conn = MySQLdb.connect(
 	)
 mysql_cursor = mysql_conn.cursor()
 
+# handle the --clean option:
 if options.clean == True:
 	stamp = get_stamp( 21600 )
 	mysql_cursor.execute( "DELETE FROM alerts WHERE stamp < %s", (stamp) )
@@ -105,6 +103,11 @@ if options.clean == True:
 	mysql_conn.commit()
 	mysql_conn.close()
 	sys.exit()
+
+# see if all required options (jid, host, graph) were given:
+if not (options.jid and options.host and options.graph):
+	parser.print_help()
+	sys.exit(1)
 
 # build subject and text:
 subj = "Munin notification for %s" %(options.host)
@@ -142,7 +145,8 @@ if options.unknown:
 	options.unknown = handle_fields( options.unknown, "unknown" )
 
 # sometimes we do get called with nothing to report:
-if not options.critical and not options.warning and not options.unknown:
+if not options.critical and not options.warning and not options.unknown \
+		and not options.force_send:
 	log( "Called with nothing to report." )
 	sys.exit(0)
 
@@ -166,8 +170,6 @@ if cl.connected == '':
 x = cl.auth( bot['user'], bot['passwd'], bot['resrc'] )
 if x == None:
 	raise RuntimeError( 'Could not authenticate %s@%s' %(bot['user'], bot['passwd']) )
-print 'here'
 m = xmpp.protocol.Message( options.jid, text, subject=subj )
-print m
 id = cl.send( xmpp.protocol.Message( options.jid, text, subject=subj ) )
 cl.disconnect()
