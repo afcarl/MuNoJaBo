@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python -Wignore
 
 """
 munojabo.py is a simple jabber-bot designed to be called by munin[1] if any
@@ -22,35 +22,43 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 [1] http://munin.projects.linpro.no/
 """
 
-import sys, xmpp, time, ConfigParser
+import sys, xmpp, time, ConfigParser, MySQLdb
+from optparse import OptionParser, OptionGroup
 
 # set to True for debugging:
-debug = True
 log_file = '/var/log/munojabo.log'
 
 # config-file
-config = ConfigParser.ConfigParser()
+config = ConfigParser.ConfigParser({ 
+	'debug': 'False',
+	'user': 'munojabo',
+	'db': 'munojabo',
+	'host': 'localhost'
+	})
 config.read( '/etc/munojabo.conf' )
 
-# credentials for the bot
-bot = { 'user':   config.get( 'munojabo', 'user' ),
-	'server': config.get( 'munojabo', 'server' ),
-	'resrc':  config.get( 'munojabo', 'resource' ),
-	'passwd': config.get( 'munojabo', 'password' )
-}
-
+# The "general" section is optional:
+if config.has_section( 'general' ):
+	debug = config.getboolean( 'general', 'debug' )
+else:
+	debug = False
 
 def log( message ):
-	print message
+	print(message)
 	if debug:
 		stamp = str(time.strftime( '%Y-%m-%d %H:%M:%S' ))
 		fi = open( log_file, 'a' )
 		fi.write( stamp + ": " + message + "\n" )
 		fi.close()
 
+log( str( sys.argv[1:] ) )
+
 def usage( exitcode = 1 ):
-	print "Please see the README-file for documentation on how to use this script."
+	print( "Please see the README-file for documentation on how to use this script." )
 	sys.exit( exitcode )
+
+def get_stamp( secs ):
+	return time.strftime( '%Y-%m-%d %H:%M:%S', time.gmtime( time.time() - secs ) )
 
 class range():
 	"""A range object is a warning/critical range as configured by munin. It
@@ -61,11 +69,10 @@ class range():
 	given.)"""
 
 	def __init__( self, text ):
-		print "range: " + text
 		self.lower = None
 		self.upper = None
 
-		if text == "":
+		if text == "" or text == ":":
 			return
 
 		text.index( ':' ) # safety check.
@@ -129,13 +136,43 @@ class field():
 		self.fieldname, data = text.split( "=" )
 		value, warn, crit = data.split( "," )
 		self.value = float( value )
-		self.warn = range( warn )
-		self.crit = range( crit )
+		
+		if warn == '' or warn == ":":
+			self.warn = None
+		else:
+			self.warn = range( warn )
+			if self.warn.in_range( self.value):
+				raise ValueError( "This is not a warning or critical value" )
+		
+		if crit == '' or crit == ":":
+			self.crit = None
+		else:
+			self.crit = range( crit )
+			if not self.warn and self.crit.in_range( self.value):
+				raise ValueError( "This is not a warning or critical value" )
+
+	def is_critical( self ):
+		if not self.crit or self.crit.in_range( self.value ):
+			return False
+		
+		return True
+
+	def is_warning( self ):
+		if not self.warn or self.warn.in_range( self.value ):
+			return False
+
+		if self.crit:
+			if self.crit.in_range( self.value ):
+				return True
+			else:
+				return False
+		
+		return True
 
 	def __str__( self ):
-		retVal = "* " + self.fieldname + " is at " + str( self.value) + ". This is "
-
-		if self.crit.in_range( self.value ): # this is only a warning
+		retVal = "* %s is at %s. This is " %(self.fieldname, self.value)
+		
+		if self.is_warning():
 			if self.warn.is_below( self.value ):
 				retVal += str(self.warn.get_distance(self.value)) \
 					+ " below warning and " + str(self.crit.get_safety_margin(self.value, "lower" )) \
@@ -144,73 +181,128 @@ class field():
 				retVal += str(self.warn.get_distance(self.value)) \
 					+ " above warning and " + str(self.crit.get_safety_margin(self.value, "upper" )) \
 					+ " below critical."
-		else: # this is critical:
+		elif self.is_critical():
 			if self.crit.is_below( self.value ):
 				retVal += str(self.crit.get_distance(self.value)) + " below the critical threshold."
 			else:
 				retVal += str(self.crit.get_distance(self.value)) + " above the critical threshold."
-				
-		return retVal + "\n"
+		else:
+			retVal +="Unknown"
+		
+		return retVal
 
-
+# credentials for the bot
+bot = { 'user':   config.get( 'xmpp', 'user' ),
+	'server': config.get( 'xmpp', 'server' ),
+	'resrc':  config.get( 'xmpp', 'resource' ),
+	'passwd': config.get( 'xmpp', 'pass' )
+}
 
 # parse parameters
-log( str( sys.argv[1:] ) )
-if len( sys.argv ) != 7:
-	log( "Bad number (" + str(len(sys.argv)) + " instead of 7) of command line arguments." )
+parser = OptionParser( version='1.0' )
+group = OptionGroup( parser, "Required options" )
+group.add_option( '--jid', dest='jid', type='string',
+	help='The JID to send the warnings to.' )
+group.add_option( '--host', dest='host', type='string',
+	help='The host these warnings are for' )
+group.add_option( '--graph', dest='graph', type='string',
+	help='The graph that has a warning/critical condition. This is the '
+	'same as the graph_title of the munin-plugin.' )
+parser.add_option_group( group )
+
+parser.add_option( '--critical', dest='critical', type='string',
+	help='Fields with a "critical" value.' )
+parser.add_option( '--warning', dest='warning', type='string',
+	help='Fields with a "warning" value.' )
+parser.add_option( '--unknown', dest='unknown', type='string',
+	help='Fields with a "unknown" value.' )
+parser.add_option( '--clean', dest='clean', action='store_true', default='False',
+	help='Clean notifications older than 21600 secondes.' )
+(options, args) = parser.parse_args()
+
+# see if all required options (jid, host, graph) were given:
+if (not options.jid or not options.host or not options.graph) and not options.clean:
 	usage()
 
-jid=sys.argv[1]
-host=sys.argv[2]
-graph=sys.argv[3]
-warn=sys.argv[4]
-crit=sys.argv[5]
-unkn=sys.argv[6]
+# connect to mysql database:
+mysql_conn = MySQLdb.connect(
+	host=config.get( 'mysql', 'host' ),
+	user=config.get( 'mysql', 'user' ),
+	passwd=config.get( 'mysql', 'pass' ),
+	db=config.get( 'mysql', 'db' )
+	)
+mysql_cursor = mysql_conn.cursor()
 
-if not warn.startswith( "--warnings=" ):
-	log( "4th argument doesn't start with \"--warnings=\"" )
-	usage()
-else:
-	warn = warn[11:]
-if not crit.startswith( "--critical=" ):
-	log( "5th argument doesn't start with \"--critical=\"" )
-	usage()
-else:
-	crit = crit[11:]
-if not unkn.startswith( "--unknown=" ):
-	log( "6th argument doesn't start with \"--unknown=\"" )
-	usage()
-else:
-	unkn = unkn[10:]
+if options.clean == True:
+	stamp = get_stamp( 21600 )
+	mysql_cursor.execute( "DELETE FROM alerts WHERE stamp < %s", (stamp) )
+	mysql_cursor.close()
+	mysql_conn.commit()
+	mysql_conn.close()
+	sys.exit()
 
 # build subject and text:
-subj = "Munin notification for " + host
-text = "One or more fields on graph \"" + graph + "\" on " + host + " are in warning or critical range."
+subj = "Munin notification for %s" %(options.host)
+text = "One or more fields on graph %s on %s are in warning or critical range.\n" %(options.graph, options.host)
 
-if crit == "" and warn == "" and unkn == "":
+def handle_fields( raw_fields, cond ):
+	raw_fields = raw_fields.split( ";" )
+	fields = []
+	stamp = get_stamp( 21600 )
+
+	for raw_field in raw_fields:
+		print raw_field
+		f = field( raw_field )
+		mysql_cursor.execute( "SELECT * FROM alerts WHERE stamp > %s AND host=%s AND graph=%s AND field=%s AND cond=%s", 
+			(stamp, options.host, options.graph, f.fieldname, cond) )
+		row = mysql_cursor.fetchone()
+		
+		if row == None:
+			fields.append( f )
+			mysql_cursor.execute( """INSERT INTO alerts(host, graph, field, cond) VALUES (%s, %s, %s, %s)""",
+				(options.host, options.graph, f.fieldname, cond) )
+	return fields
+	
+def add_fields( text, fields ):
+	ret = "\n%s:\n" %(text.capitalize())
+	for f in fields:
+		ret += "%s\n" % (f)
+	return ret
+
+if options.critical:
+	options.critical = handle_fields( options.critical, "critical" )
+if options.warning:
+	options.warning = handle_fields( options.warning, "warning" )
+if options.unknown:
+	options.unknown = handle_fields( options.unknown, "unknown" )
+
+# sometimes we do get called with nothing to report:
+if not options.critical and not options.warning and not options.unknown:
 	log( "Called with nothing to report." )
 	sys.exit(0)
 
-# critical is first:
-if crit != "":
-	text += "\nCritical:\n"
-	for raw_field in crit.split( ";" ):
-		text += str( field( raw_field ) )
+if options.critical and len(options.critical) > 0:
+	text += add_fields( "Critical", options.critical )
+if options.warning and len(options.warning) > 0:
+	text += add_fields( "Warning", options.warning )
+if options.unknown and len(options.unknown) > 0:
+	text += add_fields( "Unknown", options.unknown )
 
-# also attach warning messages:
-if warn != "":
-	text += "\nWarnings:\n"
-	for raw_field in warn.split( ";" ):
-		text += str( field( raw_field ) )
+mysql_cursor.close()
+mysql_conn.commit()
+mysql_conn.close()
 
-if unkn != "":
-	text += "\nUnknown:\n"
-	for raw_field in unkn.split( ";" ):
-		text += str( field( raw_field ) )
-
-"""Actually send the message via jabber:"""
+# Actually send the message via jabber:
 cl = xmpp.Client( bot['server'], debug = [] )
 cl.connect()
-cl.auth( bot['user'], bot['passwd'], bot['resrc'] )
-id = cl.send( xmpp.protocol.Message( jid, text, subject=subj ) )
+if cl.connected == '':
+	raise RuntimeError( 'Could not connect to jabber server', bot['server'] )
+
+x = cl.auth( bot['user'], bot['passwd'], bot['resrc'] )
+if x == None:
+	raise RuntimeError( 'Could not authenticate %s@%s' %(bot['user'], bot['passwd']) )
+print 'here'
+m = xmpp.protocol.Message( options.jid, text, subject=subj )
+print m
+id = cl.send( xmpp.protocol.Message( options.jid, text, subject=subj ) )
 cl.disconnect()

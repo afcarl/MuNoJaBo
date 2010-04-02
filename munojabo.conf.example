@@ -1,5 +1,15 @@
-[munojabo]
+;[general]
+;debug = True
+
+[xmpp]
 user: 
 server: 
-resource:
-password:
+resource: 
+pass: 
+
+[mysql]
+db: 
+user: 
+pass: 
+; Default is localhost:
+;host:
