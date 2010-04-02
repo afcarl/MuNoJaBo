@@ -44,7 +44,6 @@ else:
 	debug = False
 
 def log( message ):
-	print(message)
 	if debug:
 		stamp = str(time.strftime( '%Y-%m-%d %H:%M:%S' ))
 		fi = open( log_file, 'a' )
@@ -52,10 +51,6 @@ def log( message ):
 		fi.close()
 
 log( str( sys.argv[1:] ) )
-
-def usage( exitcode = 1 ):
-	print( "Please see the README-file for documentation on how to use this script." )
-	sys.exit( exitcode )
 
 def get_stamp( secs ):
 	return time.strftime( '%Y-%m-%d %H:%M:%S', time.gmtime( time.time() - secs ) )
@@ -85,13 +80,14 @@ parser.add_option( '--warning', dest='warning', type='string',
 	help='Fields with a "warning" value.' )
 parser.add_option( '--unknown', dest='unknown', type='string',
 	help='Fields with a "unknown" value.' )
-parser.add_option( '--clean', dest='clean', action='store_true', default='False',
+parser.add_option( '--clean', dest='clean', action='store_true', default=False,
 	help='Clean notifications older than 21600 secondes.' )
 (options, args) = parser.parse_args()
 
 # see if all required options (jid, host, graph) were given:
 if (not options.jid or not options.host or not options.graph) and not options.clean:
-	usage()
+	parser.print_help()
+	sys.exit(1)
 
 # connect to mysql database:
 mysql_conn = MySQLdb.connect(
