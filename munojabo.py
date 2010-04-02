@@ -37,46 +37,37 @@ config = ConfigParser.ConfigParser({
 	})
 config.read( '/etc/munojabo.conf' )
 
-# The "general" section is optional:
-if config.has_section( 'general' ):
-	debug = config.getboolean( 'general', 'debug' )
-else:
-	debug = False
+parser = OptionParser( version='1.0' )
+group = OptionGroup( parser, "Required options" )
+group.add_option( '--jid', help='The JID to send the warnings to.' )
+group.add_option( '--host', help='The host these warnings are for' )
+group.add_option( '--graph', help='The graph that has a warning/critical '
+	'condition. This is the same as the graph_title of the munin-plugin.' )
+parser.add_option_group( group )
+
+parser.add_option( '--critical', help='Fields with a "critical" value.' )
+parser.add_option( '--warning', help='Fields with a "warning" value.' )
+parser.add_option( '--unknown', help='Fields with a "unknown" value.' )
+parser.add_option( '--clean', action='store_true', default=False,
+	help='Clean notifications older than 21600 secondes.' )
+parser.add_option( '--force-send', action='store_true', default=False,
+	help='Send message no matter what.' )
+parser.add_option( '--debug', action='store_true', default=False,
+	help='Also print output to stdout' )
+(options, args) = parser.parse_args()
 
 def log( message ):
-	if debug:
-		stamp = str(time.strftime( '%Y-%m-%d %H:%M:%S' ))
-		fi = open( log_file, 'a' )
-		fi.write( stamp + ": " + message + "\n" )
-		fi.close()
+	stamp = str(time.strftime( '%Y-%m-%d %H:%M:%S' ))
+	fi = open( log_file, 'a' )
+	fi.write( stamp + ": " + message + "\n" )
+	fi.close()
+	if options.debug:
+		print( message.strip() )
 
 log( str( sys.argv[1:] ) )
 
 def get_stamp( secs ):
 	return time.strftime( '%Y-%m-%d %H:%M:%S', time.gmtime( time.time() - secs ) )
-
-parser = OptionParser( version='1.0' )
-group = OptionGroup( parser, "Required options" )
-group.add_option( '--jid', dest='jid', type='string',
-	help='The JID to send the warnings to.' )
-group.add_option( '--host', dest='host', type='string',
-	help='The host these warnings are for' )
-group.add_option( '--graph', dest='graph', type='string',
-	help='The graph that has a warning/critical condition. This is the '
-	'same as the graph_title of the munin-plugin.' )
-parser.add_option_group( group )
-
-parser.add_option( '--critical', dest='critical', type='string',
-	help='Fields with a "critical" value.' )
-parser.add_option( '--warning', dest='warning', type='string',
-	help='Fields with a "warning" value.' )
-parser.add_option( '--unknown', dest='unknown', type='string',
-	help='Fields with a "unknown" value.' )
-parser.add_option( '--clean', dest='clean', action='store_true', default=False,
-	help='Clean notifications older than 21600 secondes.' )
-parser.add_option( '--force-send', action='store_true', default=False,
-	help='Send message no matter what.' )
-(options, args) = parser.parse_args()
 
 # connect to mysql database:
 mysql_conn = MySQLdb.connect(
