@@ -24,8 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys, xmpp, time, ConfigParser, MySQLdb
 from optparse import OptionParser, OptionGroup
+from munin import *
 
-# set to True for debugging:
 log_file = '/var/log/munojabo.log'
 
 # config-file
@@ -59,137 +59,6 @@ def usage( exitcode = 1 ):
 
 def get_stamp( secs ):
 	return time.strftime( '%Y-%m-%d %H:%M:%S', time.gmtime( time.time() - secs ) )
-
-class range():
-	"""A range object is a warning/critical range as configured by munin. It
-	might have an upper and a lower bound or only one of each. Here are
-	three examples of valid ranges: 10:20, 10:, :20.
-	
-	Note that a range may be non-existent (e.g. if no warning range is
-	given.)"""
-
-	def __init__( self, text ):
-		self.lower = None
-		self.upper = None
-
-		if text == "" or text == ":":
-			return
-
-		text.index( ':' ) # safety check.
-		
-		if text.startswith( ':' ): # only an upper bound
-			self.upper = float( text[1:] )
-		elif text.endswith( ':' ): # only a lower bound
-			self.lower = float( text[:text.find(':')] )
-		else:
-			lower, upper = text.split(":")
-			self.lower = float( lower )
-			self.upper = float( upper )
-
-	def in_range( self, number ):
-		if self.lower != None and number < self.lower:
-			return False
-		elif self.upper != None and number > self.upper:
-			return False
-		else:
-			return True
-
-	def is_below( self, number ):
-		if self.lower !=None and number < self.lower:
-			return True
-		else:
-			return False
-	
-	def is_above( self, number ):
-		if self.upper !=None and number < self.upper:
-			return True
-		else:
-			return False
-
-	def get_distance( self, number ):
-		if self.is_below( number ):
-			return self.lower - number
-		else:
-			return number - self.upper
-
-	def get_safety_margin( self, number, boundary ):
-		if boundary == "lower":
-			return number - self.lower
-		else:
-			return self.upper - number
-
-	def __str__( self ):
-		return str( self.lower ) + ":" + str( self.upper )
-
-class field():
-	"""A field object represents a field in a munin graph. It contains its
-	name, current value plus warning and critical ranges. The warning and
-	critical ranges may be an empty string, if no range is configured by
-	munin. Current value and warn/crit ranges are coma-seperated, here are a
-	few examples:
-	* "Core 1=21.0,18:23,12:28"
-	* "/dev/sda=34,32:38,"
-	* "foo=12,,12:38
-	"""
-
-	def __init__( self, text ):
-		self.fieldname, data = text.split( "=" )
-		value, warn, crit = data.split( "," )
-		self.value = float( value )
-		
-		if warn == '' or warn == ":":
-			self.warn = None
-		else:
-			self.warn = range( warn )
-			if self.warn.in_range( self.value):
-				raise ValueError( "This is not a warning or critical value" )
-		
-		if crit == '' or crit == ":":
-			self.crit = None
-		else:
-			self.crit = range( crit )
-			if not self.warn and self.crit.in_range( self.value):
-				raise ValueError( "This is not a warning or critical value" )
-
-	def is_critical( self ):
-		if not self.crit or self.crit.in_range( self.value ):
-			return False
-		
-		return True
-
-	def is_warning( self ):
-		if not self.warn or self.warn.in_range( self.value ):
-			return False
-
-		if self.crit:
-			if self.crit.in_range( self.value ):
-				return True
-			else:
-				return False
-		
-		return True
-
-	def __str__( self ):
-		retVal = "* %s is at %s. This is " %(self.fieldname, self.value)
-		
-		if self.is_warning():
-			if self.warn.is_below( self.value ):
-				retVal += str(self.warn.get_distance(self.value)) \
-					+ " below warning and " + str(self.crit.get_safety_margin(self.value, "lower" )) \
-					+ " above critical."
-			else:
-				retVal += str(self.warn.get_distance(self.value)) \
-					+ " above warning and " + str(self.crit.get_safety_margin(self.value, "upper" )) \
-					+ " below critical."
-		elif self.is_critical():
-			if self.crit.is_below( self.value ):
-				retVal += str(self.crit.get_distance(self.value)) + " below the critical threshold."
-			else:
-				retVal += str(self.crit.get_distance(self.value)) + " above the critical threshold."
-		else:
-			retVal +="Unknown"
-		
-		return retVal
 
 # credentials for the bot
 bot = { 'user':   config.get( 'xmpp', 'user' ),
@@ -252,7 +121,7 @@ def handle_fields( raw_fields, cond ):
 
 	for raw_field in raw_fields:
 		print raw_field
-		f = field( raw_field )
+		f = field.field( raw_field )
 		mysql_cursor.execute( "SELECT * FROM alerts WHERE stamp > %s AND host=%s AND graph=%s AND field=%s AND cond=%s", 
 			(stamp, options.host, options.graph, f.fieldname, cond) )
 		row = mysql_cursor.fetchone()
