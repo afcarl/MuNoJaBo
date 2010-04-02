@@ -55,14 +55,6 @@ log( str( sys.argv[1:] ) )
 def get_stamp( secs ):
 	return time.strftime( '%Y-%m-%d %H:%M:%S', time.gmtime( time.time() - secs ) )
 
-# credentials for the bot
-bot = { 'user':   config.get( 'xmpp', 'user' ),
-	'server': config.get( 'xmpp', 'server' ),
-	'resrc':  config.get( 'xmpp', 'resource' ),
-	'passwd': config.get( 'xmpp', 'pass' )
-}
-
-# parse parameters
 parser = OptionParser( version='1.0' )
 group = OptionGroup( parser, "Required options" )
 group.add_option( '--jid', dest='jid', type='string',
@@ -161,15 +153,22 @@ mysql_cursor.close()
 mysql_conn.commit()
 mysql_conn.close()
 
+# credentials for the bot
+user = config.get( 'xmpp', 'user' )
+server = config.get( 'xmpp', 'server' )
+resource = config.get( 'xmpp', 'resource' )
+password = config.get( 'xmpp', 'pass' )
+
+# parse parameters
+cl = xmpp.Client( server, debug = [] )
 # Actually send the message via jabber:
-cl = xmpp.Client( bot['server'], debug = [] )
 cl.connect()
 if cl.connected == '':
-	raise RuntimeError( 'Could not connect to jabber server', bot['server'] )
+	raise RuntimeError( 'Could not connect to jabber server', server )
 
-x = cl.auth( bot['user'], bot['passwd'], bot['resrc'] )
+x = cl.auth( user, password, resource )
 if x == None:
-	raise RuntimeError( 'Could not authenticate %s@%s' %(bot['user'], bot['passwd']) )
+	raise RuntimeError( 'Could not authenticate %s@%s' %(user, server) )
 m = xmpp.protocol.Message( options.jid, text, subject=subj )
 id = cl.send( xmpp.protocol.Message( options.jid, text, subject=subj ) )
 cl.disconnect()
