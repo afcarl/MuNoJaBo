@@ -56,6 +56,9 @@ parser.add_option( '--debug', action='store_true', default=False,
 	help='Also print output to stdout' )
 (options, args) = parser.parse_args()
 
+def get_stamp( secs ):
+	return time.strftime( '%Y-%m-%d %H:%M:%S', time.gmtime( time.time() - secs ) )
+
 def log( message ):
 	stamp = str(time.strftime( '%Y-%m-%d %H:%M:%S' ))
 	fi = open( log_file, 'a' )
@@ -65,9 +68,6 @@ def log( message ):
 		print( message.strip() )
 
 log( str( sys.argv[1:] ) )
-
-def get_stamp( secs ):
-	return time.strftime( '%Y-%m-%d %H:%M:%S', time.gmtime( time.time() - secs ) )
 
 # connect to mysql database:
 mysql_conn = MySQLdb.connect(
@@ -85,7 +85,7 @@ if options.clean == True:
 	mysql_cursor.close()
 	mysql_conn.commit()
 	mysql_conn.close()
-	sys.exit()
+	sys.exit( 0 )
 
 # see if all required options (jid, host, graph) were given:
 if not (options.jid and options.host and options.graph):
@@ -102,7 +102,6 @@ def handle_fields( raw_fields, cond ):
 	stamp = get_stamp( 21600 )
 
 	for raw_field in raw_fields:
-		print raw_field
 		f = field.field( raw_field )
 		mysql_cursor.execute( "SELECT * FROM alerts WHERE stamp > %s AND host=%s AND graph=%s AND field=%s AND cond=%s", 
 			(stamp, options.host, options.graph, f.fieldname, cond) )
@@ -120,6 +119,22 @@ def add_fields( text, fields ):
 		ret += "%s\n" % (f)
 	return ret
 
+# credentials for the bot
+user = config.get( 'xmpp', 'user' )
+server = config.get( 'xmpp', 'server' )
+resource = config.get( 'xmpp', 'resource' )
+password = config.get( 'xmpp', 'pass' )
+
+# connect to and authenticate with jabber-server:
+cl = xmpp.Client( server, debug = [] )
+cl.connect()
+if cl.connected == '':
+	raise RuntimeError( 'Could not connect to jabber server', server )
+auth = cl.auth( user, password, resource )
+if auth == None:
+	raise RuntimeError( 'Could not authenticate %s@%s' %(user, server) )
+
+# parse critical fields
 if options.critical:
 	options.critical = handle_fields( options.critical, "critical" )
 if options.warning:
@@ -127,7 +142,8 @@ if options.warning:
 if options.unknown:
 	options.unknown = handle_fields( options.unknown, "unknown" )
 
-# sometimes we do get called with nothing to report:
+# sometimes we do get called with nothing to report, this option also triggers
+# when this has been reported already.
 if not options.critical and not options.warning and not options.unknown \
 		and not options.force_send:
 	log( "Called with nothing to report." )
@@ -140,26 +156,11 @@ if options.warning and len(options.warning) > 0:
 if options.unknown and len(options.unknown) > 0:
 	text += add_fields( "Unknown", options.unknown )
 
+# Actually send the message via jabber:
+cl.send( xmpp.protocol.Message( options.jid, text, subject=subj ) )
+
+# cleanup
 mysql_cursor.close()
 mysql_conn.commit()
 mysql_conn.close()
-
-# credentials for the bot
-user = config.get( 'xmpp', 'user' )
-server = config.get( 'xmpp', 'server' )
-resource = config.get( 'xmpp', 'resource' )
-password = config.get( 'xmpp', 'pass' )
-
-# parse parameters
-cl = xmpp.Client( server, debug = [] )
-# Actually send the message via jabber:
-cl.connect()
-if cl.connected == '':
-	raise RuntimeError( 'Could not connect to jabber server', server )
-
-x = cl.auth( user, password, resource )
-if x == None:
-	raise RuntimeError( 'Could not authenticate %s@%s' %(user, server) )
-m = xmpp.protocol.Message( options.jid, text, subject=subj )
-id = cl.send( xmpp.protocol.Message( options.jid, text, subject=subj ) )
 cl.disconnect()
