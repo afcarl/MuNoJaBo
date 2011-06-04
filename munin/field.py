@@ -16,6 +16,7 @@ class field():
 		value, warn, crit = data.split( "," )
 		if value == "unknown":
 			self.value = None
+			return
 		else:
 			self.value = float( value )
 
