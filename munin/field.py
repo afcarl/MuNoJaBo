@@ -14,7 +14,10 @@ class field():
 	def __init__( self, text ):
 		self.fieldname, data = text.split( "=" )
 		value, warn, crit = data.split( "," )
-		self.value = float( value )
+		if value == "unknown":
+			self.value = None
+		else:
+			self.value = float( value )
 
 		if warn == '' or warn == ":":
 			self.warn = None
