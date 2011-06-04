@@ -12,24 +12,21 @@ class field():
 	"""
 
 	def __init__( self, text ):
+		self.warn = None
+		self.crit = None
+		self.value = None
+
 		self.fieldname, data = text.split( "=" )
 		value, warn, crit = data.split( "," )
-		if value == "unknown":
-			self.value = None
-			return
-		else:
+		if value != "unknown":
 			self.value = float( value )
 
-		if warn == '' or warn == ":":
-			self.warn = None
-		else:   
+		if warn != '' and warn != ":" and value:
 			self.warn = range.range( warn )
 			if self.warn.in_range( self.value):
 				raise ValueError( "This is not a warning or critical value" )
 
-		if crit == '' or crit == ":":
-			self.crit = None
-		else:   
+		if crit != '' and crit != ":" and value:
 			self.crit = range.range( crit )
 			if not self.warn and self.crit.in_range( self.value):
 				raise ValueError( "This is not a warning or critical value" )
