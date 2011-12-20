@@ -74,6 +74,8 @@ if  backend == 'sqlite':
 	sql = sqlite(config)
 elif backend == 'mysql':
 	sql = mysql(config)
+else:
+	raise RuntimeError("Invalid SQL backend specified.")
 
 # handle the --clean option:
 if options.clean == True:
