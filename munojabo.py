@@ -22,10 +22,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 [1] http://munin.projects.linpro.no/
 """
 
-import sys, xmpp, time, ConfigParser
+import sys, time, ConfigParser, thread
 from optparse import OptionParser, OptionGroup
 from munin import *
 from munin.sql import mysql, sqlite
+
+if sys.version_info < (3, 0):
+    reload(sys)
+    sys.setdefaultencoding('utf8')
 
 log_file = '/var/log/munojabo.log'
 
@@ -60,7 +64,7 @@ parser.add_option( '--debug', action='store_true', default=False,
 
 def log( message ):
 	stamp = str(time.strftime( '%Y-%m-%d %H:%M:%S' ))
-#	fi = open( log_file, 'a' )
+	fi = open( log_file, 'a' )
 #	fi.write( stamp + ": " + message + "\n" )
 #	fi.close()
 	if options.debug:
@@ -89,8 +93,7 @@ if not (options.jid and options.host and options.graph):
 	sys.exit(1)
 
 # build subject and text:
-subj = "Munin notification for %s" %(options.host)
-text = "One or more fields on graph %s on %s are in warning or critical range.\n" %(options.graph, options.host)
+text = "One or more fields on graph %s on %s are in warning or critical range:\n" %(options.graph, options.host)
 
 def handle_fields( raw_fields, cond ):
 	raw_fields = raw_fields.split( ";" )
@@ -105,25 +108,10 @@ def handle_fields( raw_fields, cond ):
 	return fields
 	
 def add_fields( text, fields ):
-	ret = "\n%s:\n" %(text.capitalize())
+	ret = ''
 	for f in fields:
 		ret += "%s\n" % (f)
 	return ret
-
-# credentials for the bot
-user = config.get( 'xmpp', 'user' )
-server = config.get( 'xmpp', 'server' )
-resource = config.get( 'xmpp', 'resource' )
-password = config.get( 'xmpp', 'pass' )
-
-# connect to and authenticate with jabber-server:
-cl = xmpp.Client( server, debug = [] )
-cl.connect()
-if cl.connected == '':
-	raise RuntimeError( 'Could not connect to jabber server', server )
-auth = cl.auth( user, password, resource )
-if auth == None:
-	raise RuntimeError( 'Could not authenticate %s@%s' %(user, server) )
 
 # parse critical fields
 if options.critical:
@@ -147,9 +135,9 @@ if options.warning and len(options.warning) > 0:
 if options.unknown and len(options.unknown) > 0:
 	text += add_fields( "Unknown", options.unknown )
 
-# Actually send the message via jabber:
-cl.send( xmpp.protocol.Message( options.jid, text, subject=subj ) )
+cl = xmpp.MuNoJaBoConnection(config, options.jid, text.strip())
+if cl.connect():
+	cl.process(block=True)
 
 # cleanup
 sql.close()
-cl.disconnect()

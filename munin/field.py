@@ -50,22 +50,22 @@ class field():
 		return True
 
 	def __str__( self ):
-		retVal = "* %s is at %s. This is " %(self.fieldname, self.value)
+		retVal = "* %s is at %s (" %(self.fieldname, self.value)
 
 		if self.is_warning():
 			if self.warn.is_below( self.value ):
-				retVal += str(self.warn.get_distance(self.value)) \
-					+ " below warning and " + str(self.crit.get_safety_margin(self.value, "lower" )) \
-					+ " above critical."
+				retVal += '%s below warning, %s above critical)' % \
+					(self.warn.get_distance(self.value),
+					 self.crit.get_safety_margin(self.value, "lower" ))
 			else:
-				retVal += str(self.warn.get_distance(self.value)) \
-					+ " above warning and " + str(self.crit.get_safety_margin(self.value, "upper" )) \
-					+ " below critical."
+				retVal += '%s above warning, %s below critical)' % \
+					(self.warn.get_distance(self.value),
+					 self.crit.get_safety_margin(self.value, "upper" ))
 		elif self.is_critical():
 			if self.crit.is_below( self.value ):
-				retVal += str(self.crit.get_distance(self.value)) + " below the critical threshold."
+				retVal += "%s below critical)" % self.crit.get_distance(self.value)
 			else:
-				retVal += str(self.crit.get_distance(self.value)) + " above the critical threshold."
+				retVal += "%s above critical)" % self.crit.get_distance(self.value)
 		else:
 			retVal +="Unknown"
 
