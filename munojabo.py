@@ -22,9 +22,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 [1] http://munin.projects.linpro.no/
 """
 
-import sys, xmpp, time, ConfigParser, MySQLdb
+import sys, xmpp, time, ConfigParser
 from optparse import OptionParser, OptionGroup
 from munin import *
+from munin.sql import mysql, sqlite
 
 log_file = '/var/log/munojabo.log'
 
@@ -33,9 +34,10 @@ config = ConfigParser.ConfigParser({
 	'debug': 'False',
 	'user': 'munojabo',
 	'db': 'munojabo',
-	'host': 'localhost'
+	'host': 'localhost',
+	'backend': 'sqlite',
 	})
-config.read( '/etc/munojabo.conf' )
+config.read('/etc/munojabo.conf')
 
 parser = OptionParser( version='1.0' )
 group = OptionGroup( parser, "Required options" )
@@ -56,36 +58,28 @@ parser.add_option( '--debug', action='store_true', default=False,
 	help='Also print output to stdout' )
 (options, args) = parser.parse_args()
 
-def get_stamp( secs ):
-	return time.strftime( '%Y-%m-%d %H:%M:%S', time.gmtime( time.time() - secs ) )
-
 def log( message ):
 	stamp = str(time.strftime( '%Y-%m-%d %H:%M:%S' ))
-	fi = open( log_file, 'a' )
-	fi.write( stamp + ": " + message + "\n" )
-	fi.close()
+#	fi = open( log_file, 'a' )
+#	fi.write( stamp + ": " + message + "\n" )
+#	fi.close()
 	if options.debug:
 		print( message.strip() )
 
 log( str( sys.argv[1:] ) )
 
-# connect to mysql database:
-mysql_conn = MySQLdb.connect(
-	host=config.get( 'mysql', 'host' ),
-	user=config.get( 'mysql', 'user' ),
-	passwd=config.get( 'mysql', 'pass' ),
-	db=config.get( 'mysql', 'db' )
-	)
-mysql_cursor = mysql_conn.cursor()
+# create SQL backend:
+backend = config.get('sql', 'backend')
+if  backend == 'sqlite':
+	sql = sqlite(config)
+elif backend == 'mysql':
+	sql = mysql(config)
 
 # handle the --clean option:
 if options.clean == True:
-	stamp = get_stamp( 21600 )
-	mysql_cursor.execute( "DELETE FROM alerts WHERE stamp < %s", (stamp) )
-	mysql_cursor.close()
-	mysql_conn.commit()
-	mysql_conn.close()
-	sys.exit( 0 )
+	sql.clean()
+	sql.close()
+	sys.exit(0)
 
 # see if all required options (jid, host, graph) were given:
 if not (options.jid and options.host and options.graph):
@@ -99,18 +93,13 @@ text = "One or more fields on graph %s on %s are in warning or critical range.\n
 def handle_fields( raw_fields, cond ):
 	raw_fields = raw_fields.split( ";" )
 	fields = []
-	stamp = get_stamp( 21600 )
 
 	for raw_field in raw_fields:
 		f = field.field( raw_field )
-		mysql_cursor.execute( "SELECT * FROM alerts WHERE stamp > %s AND host=%s AND graph=%s AND field=%s AND cond=%s", 
-			(stamp, options.host, options.graph, f.fieldname, cond) )
-		row = mysql_cursor.fetchone()
 		
-		if row == None:
+		if not sql.has_alert(options.host, options.graph, f.fieldname, cond):
 			fields.append( f )
-			mysql_cursor.execute( """INSERT INTO alerts(host, graph, field, cond) VALUES (%s, %s, %s, %s)""",
-				(options.host, options.graph, f.fieldname, cond) )
+			sql.insert_alert(options.host, options.graph, f.fieldname, cond)
 	return fields
 	
 def add_fields( text, fields ):
@@ -160,7 +149,5 @@ if options.unknown and len(options.unknown) > 0:
 cl.send( xmpp.protocol.Message( options.jid, text, subject=subj ) )
 
 # cleanup
-mysql_cursor.close()
-mysql_conn.commit()
-mysql_conn.close()
+sql.close()
 cl.disconnect()
