@@ -39,6 +39,11 @@ class range():
                 lower, upper = text.split(":")
                 self.lower = float(lower)
                 self.upper = float(upper)
+                
+        if self.lower.is_integer():
+            self.lower = int(self.lower)
+        if self.upper.is_integer():
+            self.upper = int(self.upper)
 
     def in_range(self, number):
         if self.lower != None and number < self.lower:
