@@ -98,7 +98,7 @@ class sqlite(backend):
         """
         Clean old alerts.
         """
-        self.cursor.execute("DELETE FROM alerts WHERE stamp < %s", (self.get_stamp(),))
+        self.cursor.execute("DELETE FROM alerts WHERE stamp < ?", (self.get_stamp(),))
         
     def close(self):
         self.conn.commit()
