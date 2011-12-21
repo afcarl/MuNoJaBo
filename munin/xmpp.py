@@ -38,18 +38,6 @@ class MuNoJaBoConnection(ClientXMPP):
         
     def session_start(self, event):
         self.send_presence()
-        
-        # Most get_*/set_* methods from plugins use Iq stanzas, which
-        # can generate IqError and IqTimeout exceptions
-        try:
-            self.get_roster()
-        except IqError as err:
-            logging.error('There was an error getting the roster')
-            logging.error(err.iq['error']['condition'])
-            self.disconnect()
-        except IqTimeout:
-            logging.error('Server is taking too long to respond')
-            self.disconnect()
             
         for jid, hosts in self.notifications.items():
             for host, msg in hosts.items():
