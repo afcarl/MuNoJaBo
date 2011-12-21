@@ -96,25 +96,3 @@ class field():
     
     def __str__(self):
         return '%s=%s,%s,%s' % (self.name, self.value, self.warn, self.crit)
-    
-    def old_str(self):
-        retVal = "* %s is at %s (" %(self.name, self.value)
-
-        if self.is_warning():
-            if self.warn.is_below(self.value):
-                retVal += '%s below warning, %s above critical)' % \
-                    (self.warn.get_distance(self.value),
-                     self.crit.get_safety_margin(self.value, "lower"))
-            else:
-                retVal += '%s above warning, %s below critical)' % \
-                    (self.warn.get_distance(self.value),
-                     self.crit.get_safety_margin(self.value, "upper"))
-        elif self.is_critical():
-            if self.crit.is_below(self.value):
-                retVal += "%s below critical)" % self.crit.get_distance(self.value)
-            else:
-                retVal += "%s above critical)" % self.crit.get_distance(self.value)
-        else:
-            retVal +="Unknown"
-
-        return retVal
