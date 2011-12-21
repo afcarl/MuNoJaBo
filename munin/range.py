@@ -6,23 +6,24 @@ class range():
 	Note that a range may be non-existent (e.g. if no warning range is
 	given.)"""
 
-	def __init__( self, text ):
-		self.lower = None
-		self.upper = None
+	def __init__(self, text=None, lower=None, upper=None):
+		self.lower = lower
+		self.upper = upper
+		
+		if text:
+			if text == "" or text == ":":
+				return
 
-		if text == "" or text == ":":
-			return
+			text.index( ':' ) # safety check.
 
-		text.index( ':' ) # safety check.
-
-		if text.startswith( ':' ): # only an upper bound
-			self.upper = float( text[1:] )
-		elif text.endswith( ':' ): # only a lower bound
-			self.lower = float( text[:text.find(':')] )
-		else:   
-			lower, upper = text.split(":")
-			self.lower = float( lower )
-			self.upper = float( upper )
+			if text.startswith( ':' ): # only an upper bound
+				self.upper = float( text[1:] )
+			elif text.endswith( ':' ): # only a lower bound
+				self.lower = float( text[:text.find(':')] )
+			else:   
+				lower, upper = text.split(":")
+				self.lower = float( lower )
+				self.upper = float( upper )
 
 	def in_range( self, number ):
 		if self.lower != None and number < self.lower:

@@ -1,13 +1,25 @@
 from sleekxmpp import ClientXMPP
+from sleekxmpp.xmlstream import JID
 
 class MuNoJaBoConnection(ClientXMPP):
-    def __init__(self, config, mto, mbody):
+    def __init__(self, config, notifications):
         ClientXMPP.__init__(self, config.get('xmpp', 'jid'), config.get('xmpp', 'pass'))
-        self.mto = mto
-        self.mbody = mbody
-        
         self.add_event_handler("session_start", self.session_start)
         
+        self.notifications = {}
+        for jid_str, hosts in notifications.iteritems():
+            jid = JID(jid_str)
+            self.notifications[jid] = {}
+            for host, graphs in hosts.iteritems():
+                msg = 'One or more fields on %s are in warning or critical condition.\n\n'%host
+                for graph, fields in graphs.iteritems():
+                    lines = []
+                    for field in fields:
+                        lines.append(str(field))
+                    
+                    msg += '%s:\n%s\n\n'%(graph, '\n'.join(lines))
+                
+                self.notifications[jid][host] = msg.strip()
         
     def session_start(self, event):
         self.send_presence()
@@ -24,6 +36,8 @@ class MuNoJaBoConnection(ClientXMPP):
             logging.error('Server is taking too long to respond')
             self.disconnect()
             
-        self.send_message(mto=self.mto, mbody=self.mbody, mtype='chat')
+        for jid, hosts in self.notifications.iteritems():
+            for host, msg in hosts.iteritems():
+                self.send_message(mto=jid, mbody=msg.strip(), mtype='chat')
         
         self.disconnect(wait=True)

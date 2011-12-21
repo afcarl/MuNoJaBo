@@ -12,7 +12,7 @@ class backend():
         pass
     
     @abstractmethod
-    def has_alert(self, host, graph, field, cond):
+    def get_alerts(self):
         pass
     
     @abstractmethod

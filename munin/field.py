@@ -11,25 +11,50 @@ class field():
 	* "foo=12,,12:38
 	"""
 
-	def __init__( self, text ):
-		self.warn = None
-		self.crit = None
-		self.value = None
-
-		self.fieldname, data = text.split( "=" )
-		value, warn, crit = data.split( "," )
-		if value != "unknown":
-			self.value = float( value )
-
-		if warn != '' and warn != ":" and value:
-			self.warn = range.range( warn )
-			if self.warn.in_range( self.value):
-				raise ValueError( "This is not a warning or critical value" )
-
-		if crit != '' and crit != ":" and value:
-			self.crit = range.range( crit )
-			if not self.warn and self.crit.in_range( self.value):
-				raise ValueError( "This is not a warning or critical value" )
+	def __init__(self, text=None, fieldname=None, value=None, warn=None, crit=None):
+		if text:
+			self.warn = None
+			self.crit = None
+			self.value = None
+	
+			self.fieldname, data = text.split( "=" )
+			value, warn, crit = data.split( "," )
+			if value != "unknown":
+				self.value = float( value )
+	
+			if warn != '' and warn != ":" and value:
+				self.warn = range.range( warn )
+				if self.warn.in_range( self.value):
+					raise ValueError( "This is not a warning or critical value" )
+	
+			if crit != '' and crit != ":" and value:
+				self.crit = range.range( crit )
+				if not self.warn and self.crit.in_range( self.value):
+					raise ValueError( "This is not a warning or critical value" )
+		else:
+			self.fieldname = fieldname
+			self.value = value
+			self.warn = range.range(lower=warn[0], upper=warn[1])
+			self.crit = range.range(lower=crit[0], upper=crit[1])
+				
+	def warn_lower(self):
+		if self.warn:
+			return self.warn.lower
+		return None
+	
+	def warn_upper(self):
+		if self.warn:
+			return self.warn.upper
+		return None
+	
+	def crit_lower(self):
+		if self.crit:
+			return self.crit.lower
+		return None
+	
+	def crit_upper(self):
+		if self.crit:
+			return self.crit.upper
 
 	def is_critical( self ):
 		if not self.crit or self.crit.in_range( self.value ):
@@ -48,7 +73,7 @@ class field():
 				return False
 
 		return True
-
+	
 	def __str__( self ):
 		retVal = "* %s is at %s (" %(self.fieldname, self.value)
 

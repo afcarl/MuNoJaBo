@@ -28,6 +28,9 @@ class mysqldb(backend):
         else:
             return True
         
+    def get_alerts(self):
+        pass
+        
     def insert_alert(self, host, graph, field, cond):
         self.cursor.execute("INSERT INTO alerts(host, graph, field, cond) VALUES (%s, %s, %s, %s)",
             (host, graph, field, cond)

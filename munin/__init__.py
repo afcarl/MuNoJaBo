@@ -1,1 +1,1 @@
-__all__ = [ 'field', 'range', 'xmpp' ]
+__all__ = [ 'field', 'range', 'xmpp', 'common' ]
