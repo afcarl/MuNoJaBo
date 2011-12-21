@@ -40,9 +40,9 @@ class range():
                 self.lower = float(lower)
                 self.upper = float(upper)
                 
-        if self.lower.is_integer():
+        if self.lower != None and self.lower.is_integer():
             self.lower = int(self.lower)
-        if self.upper.is_integer():
+        if self.upper != None and self.upper.is_integer():
             self.upper = int(self.upper)
 
     def in_range(self, number):
@@ -81,8 +81,8 @@ class range():
         if self.lower == None and self.upper == None:
             return ''
         elif self.lower == None:
-            return ':s' % self.lower
+            return ':%s' % self.upper
         elif self.upper == None:
-            return '%s:' % self.upper
+            return '%s:' % self.lower
         else:
             return '%s:%s' % (self.lower, self.upper)

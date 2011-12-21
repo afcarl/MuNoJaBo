@@ -28,18 +28,16 @@ class field():
     * "foo=12,,12:38
     """
 
-    def __init__(self, text=None, fieldname=None, value=None, warn=None, crit=None):
+    def __init__(self, text=None, name=None, value=None, warn=None, crit=None):
         if text:
             self.warn = None
             self.crit = None
             self.value = None
     
-            self.fieldname, data = text.split("=")
+            self.name, data = text.split("=")
             value, warn, crit = data.split(",")
             if value != "unknown":
                 self.value = float(value)
-                if self.value.is_integer():
-                    self.value = int(self.value)
     
             if warn != '' and warn != ":" and value:
                 self.warn = range.range(warn)
@@ -51,10 +49,13 @@ class field():
                 if not self.warn and self.crit.in_range(self.value):
                     raise ValueError("This is not a warning or critical value")
         else:
-            self.fieldname = fieldname
+            self.name = name
             self.value = value
             self.warn = range.range(lower=warn[0], upper=warn[1])
             self.crit = range.range(lower=crit[0], upper=crit[1])
+            
+        if self.value and self.value.is_integer():
+            self.value = int(self.value)
                 
     def warn_lower(self):
         if self.warn:
@@ -94,10 +95,10 @@ class field():
         return True
     
     def __str__(self):
-        return '%s=%s,%s,%s' % (self.fieldname, self.value, self.warn, self.crit)
+        return '%s=%s,%s,%s' % (self.name, self.value, self.warn, self.crit)
     
     def old_str(self):
-        retVal = "* %s is at %s (" %(self.fieldname, self.value)
+        retVal = "* %s is at %s (" %(self.name, self.value)
 
         if self.is_warning():
             if self.warn.is_below(self.value):

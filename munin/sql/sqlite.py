@@ -74,7 +74,7 @@ class sqlite(backend):
                 alerts_by_host[host][graph] = []
             
             alerts_by_host[host][graph].append(field.field(
-                fieldname=fieldname, value=value, warn=(warn_lower, warn_upper),
+                name=fieldname, value=value, warn=(warn_lower, warn_upper),
                 crit=(crit_lower, crit_upper)
             ))
                 
@@ -87,7 +87,7 @@ class sqlite(backend):
         self.cursor.execute("""INSERT INTO alerts(stamp, host, graph, field, cond, value,
                             warn_lower, warn_upper, crit_lower, crit_upper)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (time.time(), host, graph, field.fieldname, cond, field.value, field.warn_lower(),
+            (time.time(), host, graph, field.name, cond, field.value, field.warn_lower(),
              field.warn_upper(), field.crit_lower(), field.crit_upper())
         )
         
