@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, time, argparse, configparser, thread
+import sys, time, argparse, configparser
 from munin import *
 from munin.sql import mysql, sqlite
 
