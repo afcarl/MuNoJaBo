@@ -41,8 +41,6 @@ parser.add_argument('--run-freq', metavar='SECS', default=300, type=int,
     help="This script is run every SECS seconds.")
 parser.add_argument('--notification-freq', metavar='SECS', default=21600, type=int,
     help="This script will send notifications again after SECS seconds.")
-parser.add_argument('--clean', action='store_true', default=False,
-    help='Clean notifications older than 21600 secondes.')
 parser.add_argument('--force-send', action='store_true', default=False,
     help='Send message no matter what.')
 parser.add_argument('--debug', action='store_true', default=False,
@@ -59,12 +57,6 @@ elif backend == 'mysql':
 else:
     raise RuntimeError("Invalid SQL backend specified.")
     
-# handle the --clean option:
-if args.clean == True:
-	sql.clean()
-	sql.close()
-	sys.exit(0)
-	
 notifications = {}
 alerts = sql.get_alerts()
 for host, graph_data in alerts.items():
@@ -87,4 +79,5 @@ if notifications:
     	cl.process(block=True)
 
 # cleanup
+sql.clean() # clean old alerts
 sql.close()
