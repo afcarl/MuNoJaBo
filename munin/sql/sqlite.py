@@ -96,10 +96,9 @@ class sqlite(backend):
         
     def clean(self):
         """
-        Cleans old timestamps.
+        Clean old alerts.
         """
-        stamp = get_stamp()
-        self.cursor.execute( "DELETE FROM alerts WHERE stamp < %s", (stamp) )
+        self.cursor.execute("DELETE FROM alerts WHERE stamp < %s", (self.get_stamp(),))
         
     def close(self):
         self.conn.commit()
