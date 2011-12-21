@@ -13,9 +13,9 @@ config = ConfigParser.ConfigParser(common.defaults)
 config.read('/etc/munojabo.conf')
 
 parser = argparse.ArgumentParser(version='1.0')
-parser.add_argument('--run-freq', metavar='SECS', default=300,
+parser.add_argument('--run-freq', metavar='SECS', default=300, type=int,
     help="This script is run every SECS seconds.")
-parser.add_argument('--notification-freq', metavar='SECS', default=21600,
+parser.add_argument('--notification-freq', metavar='SECS', default=21600, type=int,
     help="This script will send notifications again after SECS seconds.")
 parser.add_argument('--clean', action='store_true', default=False,
     help='Clean notifications older than 21600 secondes.')
@@ -40,12 +40,6 @@ if args.clean == True:
 	sql.close()
 	sys.exit(0)
 	
-def add_fields( text, fields ):
-    ret = ''
-    for f in fields:
-        ret += "%s\n" % (f)
-    return ret
-
 notifications = {}
 alerts = sql.get_alerts()
 for host, graph_data in alerts.iteritems():
