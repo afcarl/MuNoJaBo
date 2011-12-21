@@ -37,6 +37,6 @@ class MuNoJaBoConnection(ClientXMPP):
             
         for jid, hosts in self.notifications.items():
             for host, msg in hosts.items():
-                self.send_message(mto=jid, mbody=msg.strip(), mtype='chat')
+                self.send_message(mto=jid, mbody=msg, mtype='chat')
         
         self.disconnect(wait=True)
