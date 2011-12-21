@@ -94,6 +94,9 @@ class field():
         return True
     
     def __str__(self):
+        return '%s=%s,%s,%s' % (self.fieldname, self.value, self.warn, self.crit)
+    
+    def old_str(self):
         retVal = "* %s is at %s (" %(self.fieldname, self.value)
 
         if self.is_warning():
