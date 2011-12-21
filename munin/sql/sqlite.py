@@ -1,6 +1,6 @@
 import os, time, sqlite3
 
-from backend import backend
+from .backend import backend
 from .. import field
 
 class sqlite(backend):

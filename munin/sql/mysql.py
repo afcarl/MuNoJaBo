@@ -1,6 +1,6 @@
 import time
 
-from backend import backend
+from .backend import backend
 
 class mysqldb(backend):
     def __init__(self, args, config):

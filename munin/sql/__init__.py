@@ -1,2 +1,2 @@
-from mysql import mysqldb as mysql
-from sqlite import sqlite
+from .mysql import mysqldb as mysql
+from .sqlite import sqlite

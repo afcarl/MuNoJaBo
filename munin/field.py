@@ -1,4 +1,4 @@
-import range
+from . import range
 
 class field():
 	"""A field object represents a field in a munin graph. It contains its
