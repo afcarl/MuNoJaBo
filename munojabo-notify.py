@@ -36,7 +36,7 @@ if sys.version_info < (3, 0):
 config = configparser.ConfigParser(common.defaults)
 config.read('/etc/munojabo.conf')
 
-parser = argparse.ArgumentParser(version='1.0')
+parser = argparse.ArgumentParser()
 parser.add_argument('--run-freq', metavar='SECS', default=300, type=int,
     help="This script is run every SECS seconds.")
 parser.add_argument('--notification-freq', metavar='SECS', default=21600, type=int,
@@ -47,6 +47,7 @@ parser.add_argument('--force-send', action='store_true', default=False,
     help='Send message no matter what.')
 parser.add_argument('--debug', action='store_true', default=False,
     help='Also print output to stdout')
+parser.add_argument('--version', action='version', version='%(prog)s 2.0')
 args = parser.parse_args()
 
 # create SQL backend:

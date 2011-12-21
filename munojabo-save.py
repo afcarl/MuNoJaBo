@@ -32,12 +32,13 @@ from munin.sql import mysql, sqlite
 config = configparser.ConfigParser(common.defaults)
 config.read('/etc/munojabo.conf')
 
-parser = argparse.ArgumentParser(version='1.0')
+parser = argparse.ArgumentParser()
 group = parser.add_argument_group("Required options")
 group.add_argument('--host', help='The host these warnings are for')
 group.add_argument('--graph', help='The graph that has a warning/critical condition. This is the same'
     ' as the graph_title of the munin-plugin.')
 
+parser.add_argument('--version', action='version', version='%(prog)s 2.0')
 parser.add_argument('--critical', help='Fields with a "critical" value.')
 parser.add_argument('--warning', help='Fields with a "warning" value.')
 parser.add_argument('--unknown', help='Fields with a "unknown" value.')
