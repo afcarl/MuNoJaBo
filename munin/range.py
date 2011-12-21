@@ -31,8 +31,6 @@ class range():
             if text == "" or text == ":":
                 return
 
-            text.index(':') # safety check.
-
             if text.startswith(':'): # only an upper bound
                 self.upper = float(text[1:])
             elif text.endswith(':'): # only a lower bound
