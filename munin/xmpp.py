@@ -27,12 +27,31 @@ class MuNoJaBoConnection(ClientXMPP):
             self.notifications[jid] = {}
             for host, graphs in hosts.items():
                 msg = 'One or more fields on %s are in warning or critical condition.\n\n'%host
+                
                 for graph, fields in graphs.items():
-                    lines = []
-                    for field in fields:
-                        lines.append(str(field))
+                    msg += '%s:\n' % graph
                     
-                    msg += '%s:\n%s\n\n'%(graph, '\n'.join(lines))
+                    for field in fields:
+                        msg += '* %s is ' % field.name
+                        if field.is_warning():
+                            msg += 'approaching critical at %s (' % field.value
+                            if field.warn.is_below(field.value):
+                                msg += '%s below warning' % field.warn.get_distance(field.value)
+                                if field.crit and field.crit.lower != None:
+                                    msg += ', %s until critical' % (field.value - field.crit.lower)
+                            else:
+                                msg += '%s above warning' % field.warn.get_distance(field.value)
+                                if field.crit and field.crit.upper != None:
+                                    msg += ', %s until critical' % (field.crit.upper - field.value)
+                            msg +=')'
+                        else:
+                            msg += 'critical at %s (' % field.value
+                            if field.crit.is_below(field.value):
+                                msg += "%s below " % field.crit.get_distance(field.value)
+                            else:
+                                msg += "%s above " % field.crit.get_distance(field.value)
+                            msg += 'the threshold)'
+                    msg += '\n'
                 
                 self.notifications[jid][host] = msg.strip()
         
