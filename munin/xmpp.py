@@ -16,7 +16,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from sleekxmpp import ClientXMPP
-from sleekxmpp.xmlstream import JID
 
 class MuNoJaBoConnection(ClientXMPP):
     def __init__(self, config, notifications):
