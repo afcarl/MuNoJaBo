@@ -3,9 +3,10 @@ import time
 from backend import backend
 
 class mysqldb(backend):
-    def __init__(self, config):
+    def __init__(self, args, config):
         import MySQLdb
         
+        self.args = args
         self.config = config
         self.conn = MySQLdb.connect(
             host=config.get('sql', 'host'),
@@ -37,7 +38,7 @@ class mysqldb(backend):
         )
         
     def get_stamp(self):
-        secs = 21600
+        secs = self.args.notification_freq
         return time.strftime( '%Y-%m-%d %H:%M:%S', time.gmtime( time.time() - secs ) )
         
     def clean(self):

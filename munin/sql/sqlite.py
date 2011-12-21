@@ -5,6 +5,7 @@ from .. import field
 
 class sqlite(backend):
     def __init__(self, args, config):
+        self.args = args
         self.config = config
         self.conn = sqlite3.connect(os.path.expanduser(self.config.get('sql', 'db')))
         self.cursor = self.conn.cursor()
@@ -27,8 +28,9 @@ class sqlite(backend):
                 * set notified=1
         """
         alerts = []
-        last_run = time.time() - self.args.freq
-        oldest_stamp = self.get_stamp()
+        now = time.time()
+        last_run = time.time() - self.args.run_freq
+        oldest_stamp = now - self.args.notification_freq
         
         # fetch all alerts added since the last run
         self.cursor.execute("SELECT * FROM alerts WHERE stamp > ? AND notified=0", (last_run,))
@@ -73,8 +75,7 @@ class sqlite(backend):
         )
         
     def get_stamp(self):
-        secs = 21600
-        return time.time() - secs
+        return time.time() - self.args.notification_freq
         
     def clean(self):
         """

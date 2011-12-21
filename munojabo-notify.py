@@ -13,8 +13,10 @@ config = ConfigParser.ConfigParser(common.defaults)
 config.read('/etc/munojabo.conf')
 
 parser = argparse.ArgumentParser(version='1.0')
-parser.add_argument('--freq', metavar='SECS', default=300,
+parser.add_argument('--run-freq', metavar='SECS', default=300,
     help="This script is run every SECS seconds.")
+parser.add_argument('--notification-freq', metavar='SECS', default=21600,
+    help="This script will send notifications again after SECS seconds.")
 parser.add_argument('--clean', action='store_true', default=False,
     help='Clean notifications older than 21600 secondes.')
 parser.add_argument('--force-send', action='store_true', default=False,
@@ -26,9 +28,9 @@ args = parser.parse_args()
 # create SQL backend:
 backend = config.get('sql', 'backend')
 if  backend == 'sqlite':
-    sql = sqlite(config)
+    sql = sqlite(args, config)
 elif backend == 'mysql':
-    sql = mysql(config)
+    sql = mysql(args, config)
 else:
     raise RuntimeError("Invalid SQL backend specified.")
     
@@ -61,8 +63,7 @@ for host, graph_data in alerts.iteritems():
             notifications[jid][host][graph] = fields
 
 if notifications:
-    print('got notifications...')
-    cl = xmpp.MuNoJaBoConnection(args, config, notifications)
+    cl = xmpp.MuNoJaBoConnection(config, notifications)
     if cl.connect():
     	cl.process(block=True)
 

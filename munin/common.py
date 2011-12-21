@@ -4,4 +4,5 @@ defaults = {
     'db': 'munojabo',
     'host': 'localhost',
     'backend': 'sqlite',
+    'notification frequency': '21600',
 }

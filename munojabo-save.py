@@ -27,7 +27,7 @@ backend = config.get('sql', 'backend')
 if  backend == 'sqlite':
     sql = sqlite(args, config)
 elif backend == 'mysql':
-    sql = mysql(config)
+    sql = mysql(args, config)
 else:
     raise RuntimeError("Invalid SQL backend specified.")
     
