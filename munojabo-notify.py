@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, argparse, configparser, thread
+import sys, argparse, configparser
 from munin import *
 from munin.sql import mysql, sqlite
 
@@ -42,7 +42,7 @@ if args.clean == True:
 	
 notifications = {}
 alerts = sql.get_alerts()
-for host, graph_data in alerts.iteritems():
+for host, graph_data in alerts.items():
     if not config.has_option('hosts', host):
         continue
     
@@ -53,7 +53,7 @@ for host, graph_data in alerts.iteritems():
         if host not in notifications[jid]:
             notifications[jid][host] = {}
     
-        for graph, fields in graph_data.iteritems():
+        for graph, fields in graph_data.items():
             notifications[jid][host][graph] = fields
 
 if notifications:

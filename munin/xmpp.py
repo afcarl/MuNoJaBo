@@ -7,12 +7,12 @@ class MuNoJaBoConnection(ClientXMPP):
         self.add_event_handler("session_start", self.session_start)
         
         self.notifications = {}
-        for jid_str, hosts in notifications.iteritems():
+        for jid_str, hosts in notifications.items():
             jid = JID(jid_str)
             self.notifications[jid] = {}
-            for host, graphs in hosts.iteritems():
+            for host, graphs in hosts.items():
                 msg = 'One or more fields on %s are in warning or critical condition.\n\n'%host
-                for graph, fields in graphs.iteritems():
+                for graph, fields in graphs.items():
                     lines = []
                     for field in fields:
                         lines.append(str(field))
@@ -36,8 +36,8 @@ class MuNoJaBoConnection(ClientXMPP):
             logging.error('Server is taking too long to respond')
             self.disconnect()
             
-        for jid, hosts in self.notifications.iteritems():
-            for host, msg in hosts.iteritems():
+        for jid, hosts in self.notifications.items():
+            for host, msg in hosts.items():
                 self.send_message(mto=jid, mbody=msg.strip(), mtype='chat')
         
         self.disconnect(wait=True)
