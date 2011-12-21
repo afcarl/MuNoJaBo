@@ -7,8 +7,7 @@ class MuNoJaBoConnection(ClientXMPP):
         self.add_event_handler("session_start", self.session_start)
         
         self.notifications = {}
-        for jid_str, hosts in notifications.items():
-            jid = JID(jid_str)
+        for jid, hosts in notifications.items():
             self.notifications[jid] = {}
             for host, graphs in hosts.items():
                 msg = 'One or more fields on %s are in warning or critical condition.\n\n'%host
