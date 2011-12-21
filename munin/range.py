@@ -78,4 +78,11 @@ class range():
             return self.upper - number
 
     def __str__(self):
-        return '%s:%s' % (self.lower, self.upper)
+        if self.lower == None and self.upper == None:
+            return ''
+        elif self.lower == None:
+            return ':s' % self.lower
+        elif self.upper == None:
+            return '%s:' % self.upper
+        else:
+            return '%s:%s' % (self.lower, self.upper)
