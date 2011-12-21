@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-import sys, time, argparse, ConfigParser, thread
+import sys, time, argparse, configparser, thread
 from munin import *
 from munin.sql import mysql, sqlite
 
 # config-file
-config = ConfigParser.ConfigParser(common.defaults)
+config = configparser.ConfigParser(common.defaults)
 config.read('/etc/munojabo.conf')
 
 parser = argparse.ArgumentParser(version='1.0')
