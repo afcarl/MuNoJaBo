@@ -21,16 +21,16 @@ class MuNoJaBoConnection(ClientXMPP):
     def __init__(self, config, notifications):
         ClientXMPP.__init__(self, config.get('xmpp', 'jid'), config.get('xmpp', 'pass'))
         self.add_event_handler("session_start", self.session_start)
-        
+
         self.notifications = {}
         for jid, hosts in notifications.items():
             self.notifications[jid] = {}
             for host, graphs in hosts.items():
                 msg = 'One or more fields on %s are in warning or critical condition.\n\n'%host
-                
+
                 for graph, fields in graphs.items():
                     msg += '%s:\n' % graph
-                    
+
                     for field in fields:
                         msg += '* %s is ' % field.name
                         if field.is_warning():
@@ -52,14 +52,14 @@ class MuNoJaBoConnection(ClientXMPP):
                                 msg += "%s above " % field.crit.get_distance(field.value)
                             msg += 'the threshold)'
                     msg += '\n'
-                
+
                 self.notifications[jid][host] = msg.strip()
-        
+
     def session_start(self, event):
         self.send_presence()
-            
+
         for jid, hosts in self.notifications.items():
             for host, msg in hosts.items():
                 self.send_message(mto=jid, mbody=msg, mtype='chat')
-        
+
         self.disconnect(wait=True)

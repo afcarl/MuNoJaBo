@@ -33,17 +33,17 @@ class field():
             self.warn = None
             self.crit = None
             self.value = None
-    
+
             self.name, data = text.split("=")
             value, warn, crit = data.split(",")
             if value != "unknown":
                 self.value = float(value)
-    
+
             if warn != '' and warn != ":" and value:
                 self.warn = range.range(warn)
                 if self.warn.in_range(self.value):
                     raise ValueError("This is not a warning or critical value")
-    
+
             if crit != '' and crit != ":" and value:
                 self.crit = range.range(crit)
                 if not self.warn and self.crit.in_range(self.value):
@@ -53,25 +53,25 @@ class field():
             self.value = value
             self.warn = range.range(lower=warn[0], upper=warn[1])
             self.crit = range.range(lower=crit[0], upper=crit[1])
-            
+
         if self.value and self.value.is_integer():
             self.value = int(self.value)
-                
+
     def warn_lower(self):
         if self.warn:
             return self.warn.lower
         return None
-    
+
     def warn_upper(self):
         if self.warn:
             return self.warn.upper
         return None
-    
+
     def crit_lower(self):
         if self.crit:
             return self.crit.lower
         return None
-    
+
     def crit_upper(self):
         if self.crit:
             return self.crit.upper
@@ -93,6 +93,6 @@ class field():
                 return False
 
         return True
-    
+
     def __str__(self):
         return '%s=%s,%s,%s' % (self.name, self.value, self.warn, self.crit)

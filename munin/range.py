@@ -19,14 +19,14 @@ class range():
     """A range object is a warning/critical range as configured by munin. It
     might have an upper and a lower bound or only one of each. Here are
     three examples of valid ranges: 10:20, 10:, :20.
-    
+
     Note that a range may be non-existent (e.g. if no warning range is
     given.)"""
 
     def __init__(self, text=None, lower=None, upper=None):
         self.lower = lower
         self.upper = upper
-        
+
         if text:
             if text == "" or text == ":":
                 return
@@ -35,11 +35,11 @@ class range():
                 self.upper = float(text[1:])
             elif text.endswith(':'): # only a lower bound
                 self.lower = float(text[:text.find(':')])
-            else:   
+            else:
                 lower, upper = text.split(":")
                 self.lower = float(lower)
                 self.upper = float(upper)
-                
+
         if self.lower != None and self.lower.is_integer():
             self.lower = int(self.lower)
         if self.upper != None and self.upper.is_integer():
