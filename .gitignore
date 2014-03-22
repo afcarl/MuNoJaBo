@@ -1,3 +1,7 @@
 *.swp
 *.swo
 *.pyc
+/bin/
+/include/
+/lib/
+/local/
