@@ -53,6 +53,11 @@ class sqlite(backend):
 
         for row in self.cursor.fetchall():
             id, stamp, host, graph, fieldname, cond = row[0:6]
+
+            if self.args.force_send:  # we force sending notifications
+                alerts.append(row)
+                continue
+
             # see if this alert was already sent out:
             self.cursor.execute("""SELECT * FROM alerts
                 WHERE stamp > ? AND host=? AND graph=? AND field=? AND cond=? AND notified=1""",
