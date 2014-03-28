@@ -44,7 +44,7 @@ details.
 To configure munin to use this script, add a contact line like this to your
 munin.conf:
 
-contact.you.command munojabo.py --jid=<your_jid> --host=${var:host} \
+contact.you.command munojabo-save.py --jid=<your_jid> --host=${var:host} \
 	"--graph=${var:graph_title}" \
 	"--warnings=${loop<;>:wfields \
 		${var:label}=${var:value},${var:wrange},${var:crange}}" \
