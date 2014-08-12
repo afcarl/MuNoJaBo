@@ -41,7 +41,7 @@ munin.conf and add it as contact address for your hosts:
 contact.munojabo.command munojabo-save.py 
     --host=${var:host} \
 	"--graph=${var:graph_title}" \
-	"--warnings=${loop<;>:wfields \
+	"--warning=${loop<;>:wfields \
 		${var:label}=${var:value},${var:wrange},${var:crange}}" \
 	"--critical=${loop<;>:cfields \
 		${var:label}=${var:value},${var:wrange},${var:crange}}" \
@@ -59,3 +59,22 @@ MuNoJaBo configuration
 This script requires a config-file located at ``/etc/munojabo.conf``. An example
 configuration file can be found in this directory. Just fill in the appropriate
 details.
+
+Test configuration
+==================
+
+You can save a fake alert:
+
+```
+munojabo-save.py --host=host.example.com --graph=test --warning="warn-field=30,:20,:35" --critical= --unknown=
+munojabo-notify.py
+```
+
+If everything is configured correctly, you should receive a message via jabber:
+
+```
+One or more fields on host.example.com are in warning or critical condition.
+
+test:
+* warn-field is approaching critical at 30 (10 above warning, 5 until critical)
+```
