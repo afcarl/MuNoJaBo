@@ -27,10 +27,10 @@ import configparser
 import os
 import sys
 
-from munin import common
-from munin.sql import mysql
-from munin.sql import sqlite
-from munin.xmpp import MuNoJaBoConnection
+from munojabo import common
+from munojabo.sql import mysql
+from munojabo.sql import sqlite
+from munojabo.xmpp import MuNoJaBoConnection
 
 if sys.version_info < (3, 0):
     reload(sys)

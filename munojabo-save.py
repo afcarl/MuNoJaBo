@@ -25,10 +25,10 @@ import configparser
 import os
 import sys
 
-from munin import common
-from munin import field
-from munin.sql import mysql
-from munin.sql import sqlite
+from munojabo import common
+from munojabo import field
+from munojabo.sql import mysql
+from munojabo.sql import sqlite
 
 # config-file
 config = configparser.ConfigParser(common.defaults)
