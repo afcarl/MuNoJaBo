@@ -73,6 +73,8 @@ to actually send the notifications. Here is an example line you could add to
 e.g. ``/etc/cron.d/munojabo/``:
 
 ```
+MAILTO=root
+
 */5 *   * * *   munin   munojabo-notify.py
 ```
 
