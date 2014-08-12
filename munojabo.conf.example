@@ -1,15 +1,12 @@
-;[general]
-;debug = True
+#[general]
+# debug = True
 
 [xmpp]
-user: 
-server: 
-resource: 
-pass: 
+# Account details for the XMPP account:
+jid: user@example.com
+pass: secret
 
-[mysql]
-db: 
-user: 
-pass: 
-; Default is localhost:
-;host:
+[hosts]
+# Each host in munin has a different set of contacts.
+host.example.com: user@jabber.example.com
+host.example.org: user@jabber.example.com, user@jabber.example.org
