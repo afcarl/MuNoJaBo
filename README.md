@@ -30,8 +30,8 @@ To configure munin to use this script, add a contact line like this to your
 munin.conf and add it as contact address for your hosts:
 
 ```
-[hostname.example.com]
-    contacts you
+[host.example.com]
+    contacts munojabo
 
 contact.munojabo.command munojabo-save.py 
     --host=${var:host} \
