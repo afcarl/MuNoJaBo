@@ -56,6 +56,6 @@ in the Munin documentation.
 MuNoJaBo configuration
 ======================
 
-This script requires a config-file located at /etc/munojabo.conf. An example
+This script requires a config-file located at ``/etc/munojabo.conf``. An example
 configuration file can be found in this directory. Just fill in the appropriate
 details.
