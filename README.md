@@ -1,15 +1,10 @@
-#############
-### ABOUT ###
-#############
-The name munojabo stands for "munin jabber notification bot". Munojabo is a
-script that is designed to be called by munin when the values monitored by munin
+**MuNoJaBo** stands for "munin jabber notification bot". MuNoJaBo is a script
+that is designed to be called by munin when the values monitored by munin
 are at "warning" or "critical". As of version 2.0 this script also uses a simple
 mysql-database to store notificatons that where already send and does not send
 notifications again for six hours.
 
-####################
-### INSTALLATION ###
-####################
+=== INSTALLATION ===
 The script requires xmpp.py, under Debian/Ubuntu, this script is available as
 the python-xmpp package. Additionally, it requires the mysql-bindings for
 python, the Debian/Ubuntu package for that is called python-mysqldb.
