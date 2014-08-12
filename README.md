@@ -23,25 +23,6 @@ Under Debian/Ubuntu, you can also install the required dependencies:
 apt-get install python3-sleekxmpp python3-dnspython
 ```
 
-Database
-========
-
-You need a mysql-database for the cache. This cache is *really* necessary
-because munin will call this script every five minutes and you don't want to get
-messages every 5 minutes for a whole night. To set up a database, you have to 
-have mysql running. The required layout is already in db-layout.sql, simply
-execute:
-
-```
-mysql -uroot -p < db-layout.sql
-```
-
-You still need to create a mysql-user, this will set you up on a mysql-prompt:
-
-```
-GRANT DELETE, SELECT, INSERT on munojabo.* TO 'munojabo'@'localhost' IDENTIFIED BY '<pass>';
-```
-
 Munin configuration
 ===================
 

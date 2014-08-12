@@ -16,7 +16,7 @@ see <http://www.gnu.org/licenses/>.
 
 defaults = {
     'backend': 'sqlite',
-    'db': 'munojabo',
+    'db': '/var/lib/munin/munojabo.sqlite3',
     'debug': 'False',
     'host': 'localhost',
     'notification frequency': '21600',
