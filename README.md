@@ -23,6 +23,14 @@ Under Debian/Ubuntu, you can also install the required dependencies:
 apt-get install python3-sleekxmpp python3-dnspython
 ```
 
+**NOTE:** The below examples assume that you symlinked both
+``munojabo-save.py`` and ``munojabo-notify.py`` inside our PATH (e.g.
+``/usr/local/bin/`` and dependencies were installed globally. If you want to
+keep everything inside a virtualenv, use e.g. ``/root/MuNoJaBo/bin/python3
+/root/MuNoJaBo/munojabo-notify.py`` instead (this assumes you cloned the
+git-repository to ``/root`` and initialized the virtualenv diretly inside of
+it).
+
 Munin configuration
 ===================
 
