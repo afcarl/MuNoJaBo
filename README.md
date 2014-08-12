@@ -23,7 +23,7 @@ Under Debian/Ubuntu, you can also install the required dependencies:
 apt-get install python3-sleekxmpp python3-dnspython
 ```
 
-DATABASE
+Database
 ========
 
 You need a mysql-database for the cache. This cache is *really* necessary
