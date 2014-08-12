@@ -26,6 +26,11 @@ apt-get install python3-sleekxmpp python3-dnspython
 Munin configuration
 ===================
 
+With **MuNoJaBo**, the script itself takes care on deciding what message should
+be sent when to which user. So you only configure one contact to call the
+script itself, and configure the contacts for each host in the
+MuNoJaBo-specific configuration file (see below).
+
 To configure munin to use this script, add a contact line like this to your
 munin.conf and add it as contact address for your hosts:
 
