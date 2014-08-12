@@ -38,10 +38,11 @@ if sys.version_info < (3, 0):
 
 # config-file
 config = configparser.ConfigParser(common.defaults)
-config.read(
-    '/etc/munojabo.conf', os.path.expanduser('~/.munojabo.conf'),
-    os.path.join(os.getcwd(), 'munojabo.conf')
-)
+config.read([
+    '/etc/munojabo.conf',
+    os.path.expanduser('~/.munojabo.conf'),
+    os.path.join(os.getcwd(), 'munojabo.conf'),
+])
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--run-freq', metavar='SECS', default=300, type=int,

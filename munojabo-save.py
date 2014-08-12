@@ -32,10 +32,11 @@ from munojabo.sql import sqlite
 
 # config-file
 config = configparser.ConfigParser(common.defaults)
-config.read(
-    '/etc/munojabo.conf', os.path.expanduser('~/.munojabo.conf'),
-    os.path.join(os.getcwd(), 'munojabo.conf')
-)
+config.read([
+    '/etc/munojabo.conf',
+    os.path.expanduser('~/.munojabo.conf'),
+    os.path.join(os.getcwd(), 'munojabo.conf'),
+])
 
 parser = argparse.ArgumentParser()
 group = parser.add_argument_group("Required options")
