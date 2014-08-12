@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
 """
-This file is part of munojabo.
+This file is part of MuNoJaBo.
 
 munojabo-notify.py is a script that reads alerts saved by munojabo-save.py and sends
 jabber-notifications to the configured jabber accounts. Please see the README for documentation on
 how to configure munin to use this script.  This script was written by Mathias Ertl
 <mati@fsinf.at>.
 
-munojabo is free software: you can redistribute it and/or modify it under the terms of the GNU
+MuNoJaBo is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the
 License, or (at your option) any later version.
 
@@ -24,6 +24,7 @@ see <http://www.gnu.org/licenses/>.
 
 import argparse
 import configparser
+import os
 import sys
 
 from munin import common
@@ -37,7 +38,10 @@ if sys.version_info < (3, 0):
 
 # config-file
 config = configparser.ConfigParser(common.defaults)
-config.read('/etc/munojabo.conf')
+config.read(
+    '/etc/munojabo.conf', os.path.expanduser('~/.munojabo.conf'),
+    os.path.join(os.getcwd(), 'munojabo.conf')
+)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--run-freq', metavar='SECS', default=300, type=int,

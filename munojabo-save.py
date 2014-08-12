@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-"""This file is part of munojabo.
+"""This file is part of MuNoJaBo.
 
 munojabo-save.py is a simple script designed to be called by munin[1] if any monitored values are
 outside safe limits. Please see the README for documentation on how to configure munin to use this
 script. This script was written by Mathias Ertl <mati@fsinf.at>.
 
-munojabo is free software: you can redistribute it and/or modify it under the terms of the GNU
+MuNoJaBo is free software: you can redistribute it and/or modify it under the terms of the GNU
 General Public License as published by the Free Software Foundation, either version 3 of the
 License, or (at your option) any later version.
 
@@ -22,6 +22,7 @@ see <http://www.gnu.org/licenses/>.
 
 import argparse
 import configparser
+import os
 import sys
 
 from munin import common
@@ -31,7 +32,10 @@ from munin.sql import sqlite
 
 # config-file
 config = configparser.ConfigParser(common.defaults)
-config.read('/etc/munojabo.conf')
+config.read(
+    '/etc/munojabo.conf', os.path.expanduser('~/.munojabo.conf'),
+    os.path.join(os.getcwd(), 'munojabo.conf')
+)
 
 parser = argparse.ArgumentParser()
 group = parser.add_argument_group("Required options")
