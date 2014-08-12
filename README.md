@@ -60,6 +60,14 @@ This script requires a config-file located at ``/etc/munojabo.conf``. An example
 configuration file can be found in this directory. Just fill in the appropriate
 details.
 
+The only thing missing is that ```munojabo-notify.py``` must be called by cron
+to actually send the notifications. Here is an example line you could add to
+e.g. ``/etc/cron.d/munojabo/``:
+
+```
+*/5 *   * * *   munin   munojabo-notify.py
+```
+
 Test configuration
 ==================
 
