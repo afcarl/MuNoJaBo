@@ -4,34 +4,47 @@ are at "warning" or "critical". As of version 2.0 this script also uses a simple
 mysql-database to store notificatons that where already send and does not send
 notifications again for six hours.
 
-=== INSTALLATION ===
-The script requires xmpp.py, under Debian/Ubuntu, this script is available as
-the python-xmpp package. Additionally, it requires the mysql-bindings for
-python, the Debian/Ubuntu package for that is called python-mysqldb.
-To test if the right libraries are installed, simply execute the script with no
-parameters, it will throw an import-error upon startup.
+Installation
+============
 
-To install the script, simply copy it to any place you like. It is usually good
-to copy it into a directory that is in the PATH environment variable, the best
-place usually is /usr/local/bin.
+This script is written for Python3 and requires SleekXMPP and dnspython3. If
+you want to run it in a virtualenv, just initialize the virtualenv and install
+the required dependencies:
 
-################
-### DATABASE ###
-################
+```
+virtualenv -p /usr/bin/python3 .
+source bin/activate
+pip install -r requirements.txt
+```
+
+Under Debian/Ubuntu, you can also install the required dependencies:
+
+```
+apt-get install python3-sleekxmpp python3-dnspython
+```
+
+DATABASE
+========
+
 You need a mysql-database for the cache. This cache is *really* necessary
 because munin will call this script every five minutes and you don't want to get
 messages every 5 minutes for a whole night. To set up a database, you have to 
 have mysql running. The required layout is already in db-layout.sql, simply
 execute:
-	mysql -uroot -p < db-layout.sql
+
+```
+mysql -uroot -p < db-layout.sql
+```
 
 You still need to create a mysql-user, this will set you up on a mysql-prompt:
-	GRANT DELETE, SELECT, INSERT on munojabo.* TO 'munojabo'@'localhost' \
-		IDENTIFIED BY '<pass>';
 
-#####################
-### CONFIGURATION ###
-#####################
+```
+GRANT DELETE, SELECT, INSERT on munojabo.* TO 'munojabo'@'localhost' IDENTIFIED BY '<pass>';
+```
+
+CONFIGURATION
+=============
+
 This script requires a config-file located at /etc/munojabo.conf. An example
 configuration file can be found in this directory. Just fill in the appropriate
 details.
@@ -59,4 +72,3 @@ Note that the contact-line given above is not enough munin-configuration, since
 munin has to be configured to send warnings at all. This is outside the scope of
 this file, so please visit this page:
 	http://munin.projects.linpro.no/wiki/HowToContact
-
