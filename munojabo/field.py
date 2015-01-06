@@ -13,6 +13,8 @@ You should have received a copy of the GNU General Public License along with thi
 see <http://www.gnu.org/licenses/>.
 """
 
+import sys
+
 from . import range
 
 
@@ -40,8 +42,13 @@ class field():
 
             if warn != '' and warn != ":" and value:
                 self.warn = range.range(warn)
-                if self.warn.in_range(self.value):
-                    raise ValueError("This is not a warning or critical value")
+                try:
+                    if self.warn.in_range(self.value):
+                        raise ValueError("This is not a warning or critical value")
+                except TypeError:
+                    print("TypeError: %s" % (text, ))
+                    print("CLI: %s" % (sys.argv, ))
+                    raise ValueError("Received Type-Error!")
 
             if crit != '' and crit != ":" and value:
                 self.crit = range.range(crit)
