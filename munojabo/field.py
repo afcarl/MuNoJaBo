@@ -13,8 +13,6 @@ You should have received a copy of the GNU General Public License along with thi
 see <http://www.gnu.org/licenses/>.
 """
 
-import sys
-
 from . import range
 
 
@@ -24,9 +22,10 @@ class field():
     range is configured by munin. Current value and warn/crit ranges are coma-seperated, here are a
     few examples:
 
-    * "Core 1=21.0,18:23,12:28"
-    * "/dev/sda=34,32:38,"
-    * "foo=12,,12:38
+    * ``Core 1=21.0,18:23,12:28``
+    * ``/dev/sda=34,32:38,``
+    * ``foo=12,,12:38``
+    * ``errors=unknown,:1,:``
     """
 
     def __init__(self, text=None, name=None, value=None, warn=None, crit=None):
@@ -42,13 +41,10 @@ class field():
 
             if warn != '' and warn != ":" and value:
                 self.warn = range.range(warn)
-                try:
-                    if self.warn.in_range(self.value):
-                        raise ValueError("This is not a warning or critical value")
-                except TypeError:
-                    print("TypeError: %s" % (text, ))
-                    print("CLI: %s" % (sys.argv, ))
-                    raise ValueError("Received Type-Error!")
+
+                if self.value is not None and self.warn.in_range(self.value):
+                    # Unless this field has an unknown value, it should be outside the warning range
+                    raise ValueError("This is not a warning or critical value")
 
             if crit != '' and crit != ":" and value:
                 self.crit = range.range(crit)
