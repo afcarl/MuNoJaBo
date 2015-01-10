@@ -79,13 +79,13 @@ class field():
             return self.crit.upper
 
     def is_critical(self):
-        if not self.crit or self.crit.in_range(self.value):
+        if not self.value or not self.crit or self.crit.in_range(self.value):
             return False
 
         return True
 
     def is_warning(self):
-        if not self.warn or self.warn.in_range(self.value):
+        if not self.value or not self.warn or self.warn.in_range(self.value):
             return False
 
         if self.crit:
