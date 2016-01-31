@@ -47,7 +47,7 @@ class MuNoJaBoConnection(ClientXMPP):
                             msg += 'critical at %s (' % field.value
                             if field.crit.is_below(field.value):
                                 msg += "%s below " % field.crit.get_distance(field.value)
-                            else:
+                            elif field.crit.is_above(field.value):
                                 msg += "%s above " % field.crit.get_distance(field.value)
                             msg += 'the threshold)'
                     msg += '\n'
