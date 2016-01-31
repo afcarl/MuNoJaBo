@@ -38,18 +38,29 @@ class MuNoJaBoConnection(ClientXMPP):
                                 msg += '%s below warning' % field.warn.get_distance(field.value)
                                 if field.crit and field.crit.lower is not None:
                                     msg += ', %s until critical' % (field.value - field.crit.lower)
-                            else:
+                            elif field.warn.is_above(field.value):
                                 msg += '%s above warning' % field.warn.get_distance(field.value)
                                 if field.crit and field.crit.upper is not None:
                                     msg += ', %s until critical' % (field.crit.upper - field.value)
+                            else:
+                                print('%s.%s not warning: %s (%s:%s)', graph, field.name,
+                                      field.crit.lower, field.crit.upper)
                             msg += ')'
-                        else:
+                        elif field.is_critical():
                             msg += 'critical at %s (' % field.value
                             if field.crit.is_below(field.value):
                                 msg += "%s below " % field.crit.get_distance(field.value)
                             elif field.crit.is_above(field.value):
                                 msg += "%s above " % field.crit.get_distance(field.value)
+                            else:
+                                print('%s.%s not critical: %s (%s:%s)' % graph, field.name,
+                                      field.crit.lower, field.crit.upper)
                             msg += 'the threshold)'
+                        else:
+                            print('%s.%s not critical/warning: %s (%s:%s/%s:%s)', graph,
+                                  field.name, field.warn.lower, field.warn.upper, field.crit.lower,
+                                  field.crit.upper)
+
                     msg += '\n'
 
                 self.notifications[jid][host] = msg.strip()
