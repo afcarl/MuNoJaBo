@@ -43,8 +43,8 @@ class MuNoJaBoConnection(ClientXMPP):
                                 if field.crit and field.crit.upper is not None:
                                     msg += ', %s until critical' % (field.crit.upper - field.value)
                             else:
-                                print('%s.%s not warning: %s (%s:%s)', graph, field.name,
-                                      field.crit.lower, field.crit.upper)
+                                print('%s.%s not warning: %s (%s:%s)' % (graph, field.name,
+                                      field.crit.lower, field.crit.upper))
                             msg += ')'
                         elif field.is_critical():
                             msg += 'critical at %s (' % field.value
@@ -53,13 +53,13 @@ class MuNoJaBoConnection(ClientXMPP):
                             elif field.crit.is_above(field.value):
                                 msg += "%s above " % field.crit.get_distance(field.value)
                             else:
-                                print('%s.%s not critical: %s (%s:%s)' % graph, field.name,
-                                      field.crit.lower, field.crit.upper)
+                                print('%s.%s not critical: %s (%s:%s)' % (
+                                    graph, field.name, field.crit.lower, field.crit.upper))
                             msg += 'the threshold)'
                         else:
-                            print('%s.%s not critical/warning: %s (%s:%s/%s:%s)', graph,
-                                  field.name, field.warn.lower, field.warn.upper, field.crit.lower,
-                                  field.crit.upper)
+                            print('%s.%s not critical/warning: %s (%s:%s/%s:%s)' % (
+                                graph, field.name, field.warn.lower, field.warn.upper,
+                                field.crit.lower, field.crit.upper))
 
                     msg += '\n'
 
