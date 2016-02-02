@@ -27,7 +27,7 @@ class range():
         self.upper = upper
 
         if text:
-            if text == "" or text == ":":
+            if text == ":":
                 return
 
             if text.startswith(':'):  # only an upper bound
