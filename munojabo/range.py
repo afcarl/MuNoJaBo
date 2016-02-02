@@ -59,7 +59,7 @@ class range():
             return False
 
     def is_above(self, number):
-        if self.upper is not None and number < self.upper:
+        if self.upper is not None and number > self.upper:
             return True
         else:
             return False
